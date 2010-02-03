@@ -54,8 +54,10 @@ class Mmmenu
 
           item[:paths].each do |path|
             if path.kind_of?(Array)
-              option_current = item_markup[:active] if @current_path == path[0].chomp('/') and
-                @request_type == path[1]
+              if (@current_path == path[0].chomp('/') and @request_type == path[1]) or # IF path match perfectly
+              (path[0] =~ /\*$/ and @current_path =~ /^#{path[0].chomp('*')}(.+)?$/)   # OR IF * wildcard is used and path matches 
+                option_current = item_markup[:active] 
+              end
             else
               option_current = item_markup[:active] if @current_path == path
             end
@@ -66,8 +68,8 @@ class Mmmenu
           option_current = item_markup[:active]
         elsif item[:href] and !option_current
           item_href = item[:href].chomp('/')
-          if (@current_path == item_href) or
-          (item[:match_subpaths] and @current_path =~ /^#{item_href}(\/.+)?$/)
+          if (@current_path == item_href) or                                        # IF path match perfectly
+          (item[:match_subpaths] and @current_path =~ /^#{item_href}(\/.+)?$/)      # OR IF :match_subpaths options is used and path matches
             option_current = item_markup[:active]
           end
         else
