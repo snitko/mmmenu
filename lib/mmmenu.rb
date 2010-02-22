@@ -1,5 +1,7 @@
 class Mmmenu
 
+  attr_accessor :active_item
+
   def initialize(options, &block)
     @items        = options[:items] || Mmmenu::Level.new(&block).to_a
     @current_path = options[:request].path.chomp('/')
@@ -30,7 +32,6 @@ class Mmmenu
     build_level[:output]
   end
 
-
   private
 
     def build_level(items=@items, level=0)
@@ -48,13 +49,16 @@ class Mmmenu
         option_current = nil
         child_menu = build_level(item[:children], level+1) if item[:children]
         child_output = child_menu[:output] if child_menu
-
-        # Current item is active when the paths match
-        if item[:paths]
+        
+        # Current item was set manually
+        if item[:href] == active_item
+          option_current = item_markup[:active]
+        # Current item is active when paths match
+        elsif item[:paths]
 
           item[:paths].each do |path|
             if path.kind_of?(Array)
-              if (@current_path == path[0].chomp('/') and @request_type == path[1]) or # IF path match perfectly
+              if (@current_path == path[0].chomp('/') and @request_type == path[1]) or # IF path matches perfectly
               (path[0] =~ /\*$/ and @current_path =~ /^#{path[0].chomp('*')}(.+)?$/)   # OR IF * wildcard is used and path matches 
                 option_current = item_markup[:active] 
               end
@@ -63,12 +67,12 @@ class Mmmenu
             end
           end
         
-        # Current item is active when one of his children is active
+        # Current item is active when one of its children is active
         elsif child_menu and child_menu[:has_active_item]
           option_current = item_markup[:active]
         elsif item[:href] and !option_current
           item_href = item[:href].chomp('/')
-          if (@current_path == item_href) or                                        # IF path match perfectly
+          if (@current_path == item_href) or                                        # IF path matches perfectly
           (item[:match_subpaths] and @current_path =~ /^#{item_href}(\/.+)?$/)      # OR IF :match_subpaths options is used and path matches
             option_current = item_markup[:active]
           end

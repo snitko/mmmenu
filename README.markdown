@@ -50,7 +50,11 @@ Finally, let's take a closer look at some of the options and what they mean.
 * Active item
 Mmmenu automatically marks each menu_item if it is active with the markup, that you provide with
 :active_markup option for `#item_markup` method. The item is considered active not only if the path
-match, but also if one of the children of the item is active.
+match, but also if one of the children of the item is active. You may as well set the active item manually like that:
+
+  @menu.active_item = '/articles'
+
+In this case `'/articles'` would match against the second argument that you pass to the `#add` method, which is the path the menu itme points to. 
 
 * Paths
 For each menu item you may specify a number of paths, that should match for the item to be active.
@@ -63,6 +67,10 @@ This way, the menu item will appear active even when you're on the /articles/new
 Alernatively, you can do this:
 
     l1.add "Articles" articles_path, :match_subpaths => true
+
+Or you may use wildcards:
+
+    l1.add "Articles" articles_path, :paths => [["/articles/*"]]
 
 That's much easier usually.
 
