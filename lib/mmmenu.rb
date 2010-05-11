@@ -40,7 +40,7 @@ class Mmmenu
       item_markup   = build_item_markup(level)
       level_markup  = build_level_markup(level)
 
-      # Parsing of single menu level happens here
+      # Parsing of a single menu level happens here
       output          = ''
       has_active_item = false
 
@@ -51,41 +51,23 @@ class Mmmenu
         child_menu = build_level(item[:children], level+1) if item[:children]
         child_output = child_menu[:output] if child_menu
         
-        # Current item was set manually
-        if item[:href] == active_item
-          option_current = item_markup[:active]
-        # Current item is active when paths match
-        elsif item[:paths]
+        #############################################################
+        # Here's where we check if the current item is an active item
+        # and we should use use a special markup for it
+        #############################################################
+        if (
+          item[:href] == active_item                    or
+          item_paths_match?(item)                       or
+          (child_menu and child_menu[:has_active_item]) or
+          item_href_match?(item)
+        ) and !has_active_item
+                    
+              then
+                  option_current = item_markup[:active] and has_active_item = true
 
-          item[:paths].each do |path|
-            if path.kind_of?(Array)
-              # IF path matches perfectly
-              if ((@current_path == path[0].chomp('/') and @request_type == path[1])  or
-              # OR IF * wildcard is used and path matches
-              (path[0] =~ /\*$/ and @current_path =~ /^#{path[0].chomp('*')}(.+)?$/)) and
-              # only if all listed params match
-              params_match?(path)
-                option_current = item_markup[:active] 
-              end
-            else
-              option_current = item_markup[:active] if @current_path == path
-            end
-          end
-        
-        # Current item is active when one of its children is active
-        elsif child_menu and child_menu[:has_active_item]
-          option_current = item_markup[:active]
-        elsif item[:href] and !option_current
-          item_href = item[:href].chomp('/')
-          if (@current_path == item_href) or                                        # IF path matches perfectly
-          (item[:match_subpaths] and @current_path =~ /^#{item_href}(\/.+)?$/)      # OR IF :match_subpaths options is used and path matches
-            option_current = item_markup[:active]
-          end
-        else
-          option_current = nil
         end
-        has_active_item = true if option_current
-        
+        #############################################################
+
         item_output = item_markup[:basic].call(item[:href], item[:title], option_current)
         output += "#{item_output}#{child_output}"
       end
@@ -93,6 +75,43 @@ class Mmmenu
       output = level_markup.call(output)
       { :has_active_item => has_active_item, :output => output }
 
+    end
+
+
+    # Matches menu item against :paths option
+    def item_paths_match?(item)
+      if item[:paths]
+
+        item[:paths].each do |path|
+          if path.kind_of?(Array)
+            # IF path matches perfectly
+            if ((@current_path == path[0].chomp('/') and @request_type == path[1])  or 
+            # OR IF * wildcard is used and path matches
+            (path[0] =~ /\*$/ and @current_path =~ /^#{path[0].chomp('*')}(.+)?$/)) and    
+            # all listed request params match
+            params_match?(path)
+              return true 
+            end
+          else
+            return true if @current_path == path
+          end
+        end
+
+      end
+      return false
+    end
+
+    # Matches menu item against the actual path it's pointing to.
+    # Is only applied when :path option is not present.
+    def item_href_match?(item)
+      if item[:href]
+        item_href = item[:href].chomp('/')
+        if (@current_path == item_href) or                                        # IF path matches perfectly
+        (item[:match_subpaths] and @current_path =~ /^#{item_href}(\/.+)?$/)      # OR IF :match_subpaths options is used and path matches
+          return true
+        end
+      end unless item[:paths]
+      return false
     end
 
     def build_item_markup(level)
