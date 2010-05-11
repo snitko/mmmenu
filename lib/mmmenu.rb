@@ -3,11 +3,12 @@ class Mmmenu
   attr_accessor :active_item
 
   def initialize(options, &block)
-    @items        = options[:items] || Mmmenu::Level.new(&block).to_a
-    @current_path = options[:request].path.chomp('/')
-    @request_type = options[:request].method.to_s
-    @item_markup  = []
-    @level_markup = []
+    @items          = options[:items] || Mmmenu::Level.new(&block).to_a
+    @current_path   = options[:request].path.chomp('/')
+    @request_params = options[:request].params
+    @request_type   = options[:request].method.to_s
+    @item_markup    = []
+    @level_markup   = []
   end
 
   # Defines the markup for each menu item on the current and
@@ -58,8 +59,12 @@ class Mmmenu
 
           item[:paths].each do |path|
             if path.kind_of?(Array)
-              if (@current_path == path[0].chomp('/') and @request_type == path[1]) or # IF path matches perfectly
-              (path[0] =~ /\*$/ and @current_path =~ /^#{path[0].chomp('*')}(.+)?$/)   # OR IF * wildcard is used and path matches 
+              # IF path matches perfectly
+              if ((@current_path == path[0].chomp('/') and @request_type == path[1])  or
+              # OR IF * wildcard is used and path matches
+              (path[0] =~ /\*$/ and @current_path =~ /^#{path[0].chomp('*')}(.+)?$/)) and
+              # only if all listed params match
+              params_match?(path)
                 option_current = item_markup[:active] 
               end
             else
@@ -112,6 +117,13 @@ class Mmmenu
           @level_markup.last
         end
       end
+    end
+
+    def params_match?(path)
+      path[2].each do |k,v|
+        return false unless (@request_params[k.to_s].nil? and v.nil?) or @request_params[k.to_s] == v.to_s
+      end if path[2]
+      true
     end
 
 end

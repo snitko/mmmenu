@@ -19,6 +19,7 @@ describe Mmmenu do
     @request = mock('request')
     @request.stub!(:path).once.and_return('/items1/new')
     @request.stub!(:method).once.and_return('get')
+    @request.stub!(:params).once.and_return({})
     @menu = Mmmenu.new(:items => @items, :request => @request )
   end
 
@@ -50,6 +51,7 @@ END
     request = mock('request')
     request.should_receive(:path).once.and_return('/item')
     request.should_receive(:method).once.and_return('get')
+    request.should_receive(:params).once.and_return({})
     @menu = Mmmenu.new(:items => items, :request => request )
     @menu.item_markup(0, :active_markup => 'current') do |link, text, options|
       "#{text}: #{link} #{options}\n"
@@ -59,6 +61,27 @@ item1: /item1
 item2: /item2 current
 END
 
+  end
+
+  it "chooses the current item with a specific request param" do
+    items = [
+      { :title => 'item1', :href => '/item1', :paths => [['/item1', 'get',  {:param => 1}]] },
+      { :title => 'item2', :href => '/item1', :paths => [['/item1', 'get',  {:param => 2}]] },
+      { :title => 'item3', :href => '/item1', :paths => [['/item1', 'get',  {:param => nil}]] }
+    ]
+    request = mock('request')
+    request.should_receive(:path).once.and_return('/item1')
+    request.should_receive(:params).once.and_return({"param" => "1"})
+    request.should_receive(:method).once.and_return('get')
+    @menu = Mmmenu.new(:items => items, :request => request )
+    @menu.item_markup(0, :active_markup => 'current') do |link, text, options|
+      "#{text}: #{link} #{options}\n"
+    end
+    @menu.build.should == <<END
+item1: /item1 current
+item2: /item1 
+item3: /item1 
+END
   end
 
   it "creates menu items in a block using nice DSL" do

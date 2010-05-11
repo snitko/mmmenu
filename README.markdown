@@ -64,6 +64,13 @@ If you'd like to specify paths explicitly, do something like this:
     `l1.add "Articles" articles_path, :paths => [[new_article_path, 'get'], [articles_path, 'post'], [articles_path, 'get']]`
 
 This way, the menu item will appear active even when you're on the /articles/new page.
+There's also a third array element, which must be hash. In it may list request_params that should match, for example:
+
+    `l1.add "Articles" articles_path, :paths => [[articles_path, 'get', {:filter => 'published'}]]`
+
+That way, only a request to "/articles?filter=published" will make this menu item active.
+Of course it doesn't matter, if the request contains some other params. But you can make sure it doesn't by saying something like `{:personal => nil}` 
+
 Alernatively, you can do this:
 
     l1.add "Articles" articles_path, :match_subpaths => true
