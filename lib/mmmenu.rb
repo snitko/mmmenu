@@ -85,7 +85,8 @@ class Mmmenu
         item[:paths].each do |path|
           if path.kind_of?(Array)
             # IF path matches perfectly
-            if ((@current_path == path[0].chomp('/') and @request_type == path[1].downcase)  or 
+            request_type_option = path[1] || ""
+            if ((@current_path == path[0].chomp('/') and @request_type == request_type_option.downcase)  or 
             # OR IF * wildcard is used and path matches
             (path[0] =~ /\*$/ and @current_path =~ /^#{path[0].chomp('*')}(.+)?$/)) and    
             # all listed request params match
