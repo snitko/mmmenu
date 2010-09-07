@@ -6,7 +6,7 @@ class Mmmenu
     @items          = options[:items] || Mmmenu::Level.new(&block).to_a
     @current_path   = options[:request].path.chomp('/')
     @request_params = options[:request].params
-    @request_type   = options[:request].method.to_s
+    @request_type   = options[:request].method.to_s.downcase
     @item_markup    = []
     @level_markup   = []
   end
@@ -53,7 +53,7 @@ class Mmmenu
         
         #############################################################
         # Here's where we check if the current item is an active item
-        # and we should use use a special markup for it
+        # and we should use a special markup for it
         #############################################################
         if (
           item[:href] == active_item                    or
@@ -85,7 +85,7 @@ class Mmmenu
         item[:paths].each do |path|
           if path.kind_of?(Array)
             # IF path matches perfectly
-            if ((@current_path == path[0].chomp('/') and @request_type == path[1])  or 
+            if ((@current_path == path[0].chomp('/') and @request_type == path[1].downcase)  or 
             # OR IF * wildcard is used and path matches
             (path[0] =~ /\*$/ and @current_path =~ /^#{path[0].chomp('*')}(.+)?$/)) and    
             # all listed request params match
