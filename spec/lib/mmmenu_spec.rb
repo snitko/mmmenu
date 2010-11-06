@@ -25,10 +25,10 @@ describe Mmmenu do
 
   it "renders one level" do
     @menu.item_markup(0, :active_markup => 'current') do |link, text, options|
-      "#{text}: #{link} #{options}\n"
+      "#{text}: #{link} #{options[:active]}\n"
     end
     @menu.item_markup(2, :active_markup => 'current') do |link, text, options|
-      "  #{text}: #{link} #{options}\n"
+      "  #{text}: #{link} #{options[:active]}\n"
     end
     @menu.level_markup(0) { |menu| menu }
     (@menu.build.chomp(" \n") + "\n").should == <<END
@@ -54,7 +54,7 @@ END
     request.should_receive(:params).once.and_return({})
     @menu = Mmmenu.new(:items => items, :request => request )
     @menu.item_markup(0, :active_markup => 'current') do |link, text, options|
-      "#{text}: #{link} #{options}\n"
+      "#{text}: #{link} #{options[:active]}\n"
     end
     @menu.build.should == <<END
 item1: /item1 
@@ -75,7 +75,7 @@ END
     request.should_receive(:method).once.and_return('get')
     @menu = Mmmenu.new(:items => items, :request => request )
     @menu.item_markup(0, :active_markup => 'current') do |link, text, options|
-      "#{text}: #{link} #{options}\n"
+      "#{text}: #{link} #{options[:active]}\n"
     end
     @menu.build.should == <<END
 item1: /item1 current
