@@ -95,10 +95,29 @@ END
     end
 
     @menu.build.should == <<END
-Item1 /items1 current
-Item2 /items2\s
-New /item2/new\s
-Edit /item2/edit\s
+Item1 /items1 current\s
+Item2 /items2\s\s
+New /item2/new\s\s
+Edit /item2/edit\s\s
+END
+
+  end
+
+  it "creates menu items in a block using nice DSL and additional options" do
+
+    @menu = Mmmenu.new(:request => @request) do |m|
+      m.add 'Item1', '/items1', :match_subpaths => true
+      m.add 'Item2', '/items2', :html => 'whatever' do |subm|
+        subm.add 'New', '/item2/new'
+        subm.add 'Edit', '/item2/edit', :html => 'huh'
+      end
+    end
+
+    @menu.build.should == <<END
+Item1 /items1 current\s
+Item2 /items2  whatever
+New /item2/new\s\s
+Edit /item2/edit  huh
 END
 
   end

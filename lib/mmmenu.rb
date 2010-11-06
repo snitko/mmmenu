@@ -123,7 +123,7 @@ class Mmmenu
         unless @item_markup.empty?
           { :basic => @item_markup.last[:block], :active => @item_markup.last[:active_markup] }
         else
-          { :basic => lambda { |link,text,options| "#{text} #{link} #{options[:active]}\n" }, :active => 'current' }
+          { :basic => lambda { |link,text,options| "#{text} #{link} #{options[:active]} #{options[:html]}\n" }, :active => 'current' }
         end
       end
     end
