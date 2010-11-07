@@ -45,7 +45,7 @@ and `#level_markup` does the same for menu level wrapper. They may contain as mu
 as you want and you don't need to define a markup for each level: the deepest level markup
 defined will be used for all of the deeper levels.
 
-Moreover, if you might want to highlight `li` tag and pass some class to `a` tag, you can
+Moreover, you might want to highlight `li` tag and pass some class to `a` tag, you can
 do it like this:
 
     def build_mmmenu(menu)
