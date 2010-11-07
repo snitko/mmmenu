@@ -33,7 +33,7 @@ when you installed the plugin. Let's take a look at what's inside this helper:
 
     def build_mmmenu(menu)
       menu.item_markup(0, :active_markup => 'class="current"') do
-        |link, text, options| "<li><a href=\"#{link}\" #{options}>#{text}</a></li>\n"
+        |link, text, options| "<li><a href=\"#{link}\" #{options[:active]}>#{text}</a></li>\n"
       end
       menu.level_markup(0) { |menu| '<ul class="menu">' + menu + '</ul>' }
       menu.level_markup(1) { |menu| '<ul class="submenu">' + menu + '</ul>' }
@@ -43,7 +43,44 @@ when you installed the plugin. Let's take a look at what's inside this helper:
 You can see now, that `#item_markup` method defines the html markup for menu item,
 and `#level_markup` does the same for menu level wrapper. They may contain as much levels
 as you want and you don't need to define a markup for each level: the deepest level markup
-defined will be used for all of the deeper levels. Now go ahead and change this method the way you like.
+defined will be used for all of the deeper levels.
+
+Moreover, if you might want to highlight `li` tag and pass some class to `a` tag, you can
+do it like this:
+
+    def build_mmmenu(menu)
+      menu.item_markup(0, :active_markup => 'class="current"') do
+        |link, text, options| "<li #{options[:active]}><a href=\"#{link}\" class=\"#{options[:html]}\">#{text}</a></li>\n"
+      end
+      menu.build
+    end
+
+    @menu = Mmmenu.new(:request => @request) do |m|
+      m.add 'Item1', '/items1', :match_subpaths => true
+      m.add 'Item2', '/items2', :html => 'class="special_link"' do |subm|
+        subm.add 'New', '/item2/new'
+        subm.add 'Edit', '/item2/edit', :html => 'huh'
+      end
+    end
+
+Or, in combination with powered by Rails `#content_tag` and `#link_to` like this:
+
+    def build_mmmenu(menu)
+      menu.item_markup(0, :active_markup => { :class => :current }) do
+        |link, text, options| content_tag(:li, link_to(text, link, options[:html]), options[:active])
+      end
+      menu.build
+    end
+
+    @menu = Mmmenu.new(:request => @request) do |m|
+      m.add 'Item1', '/items1', :match_subpaths => true
+      m.add 'Item2', '/items2', :html => { :class => :special_link } do |subm|
+        subm.add 'New', '/item2/new'
+        subm.add 'Edit', '/item2/edit'
+      end
+    end
+
+Now go ahead and change this method the way you like.
 
 Finally, let's take a closer look at some of the options and what they mean.
 ---------------------------------------------------------------------
