@@ -47,7 +47,7 @@ class Mmmenu
       raise("Mmmenu object #{self} is empty, no items defined!") if items.nil? or items.empty?
       items.each do |item|
 
-        option_current = nil
+        options = {}
         child_menu = build_level(item[:children], level+1) if item[:children]
         child_output = child_menu[:output] if child_menu
         
@@ -63,12 +63,13 @@ class Mmmenu
         ) and !has_active_item
                     
               then
-                  option_current = item_markup[:active] and has_active_item = true
+                  options[:active] = item_markup[:active] and has_active_item = true
 
         end
         #############################################################
 
-        item_output = item_markup[:basic].call(item[:href], item[:title], option_current)
+        options.merge!(:html => item[:html]) if item[:html]
+        item_output = item_markup[:basic].call(item[:href], item[:title], options)
         output += "#{item_output}#{child_output}"
       end
 
@@ -122,7 +123,7 @@ class Mmmenu
         unless @item_markup.empty?
           { :basic => @item_markup.last[:block], :active => @item_markup.last[:active_markup] }
         else
-          { :basic => lambda { |link,text,options| "#{text} #{link} #{options}\n" }, :active => 'current' }
+          { :basic => lambda { |link,text,options| "#{text} #{link} #{options[:active]} #{options[:html]}\n" }, :active => 'current' }
         end
       end
     end

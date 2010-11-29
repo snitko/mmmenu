@@ -25,10 +25,10 @@ describe Mmmenu do
 
   it "renders one level" do
     @menu.item_markup(0, :active_markup => 'current') do |link, text, options|
-      "#{text}: #{link} #{options}\n"
+      "#{text}: #{link} #{options[:active]}\n"
     end
     @menu.item_markup(2, :active_markup => 'current') do |link, text, options|
-      "  #{text}: #{link} #{options}\n"
+      "  #{text}: #{link} #{options[:active]}\n"
     end
     @menu.level_markup(0) { |menu| menu }
     (@menu.build.chomp(" \n") + "\n").should == <<END
@@ -54,7 +54,7 @@ END
     request.should_receive(:params).once.and_return({})
     @menu = Mmmenu.new(:items => items, :request => request )
     @menu.item_markup(0, :active_markup => 'current') do |link, text, options|
-      "#{text}: #{link} #{options}\n"
+      "#{text}: #{link} #{options[:active]}\n"
     end
     @menu.build.should == <<END
 item1: /item1 
@@ -75,7 +75,7 @@ END
     request.should_receive(:method).once.and_return('get')
     @menu = Mmmenu.new(:items => items, :request => request )
     @menu.item_markup(0, :active_markup => 'current') do |link, text, options|
-      "#{text}: #{link} #{options}\n"
+      "#{text}: #{link} #{options[:active]}\n"
     end
     @menu.build.should == <<END
 item1: /item1 current
@@ -95,10 +95,29 @@ END
     end
 
     @menu.build.should == <<END
-Item1 /items1 current
-Item2 /items2\s
-New /item2/new\s
-Edit /item2/edit\s
+Item1 /items1 current\s
+Item2 /items2\s\s
+New /item2/new\s\s
+Edit /item2/edit\s\s
+END
+
+  end
+
+  it "creates menu items in a block using nice DSL and additional options" do
+
+    @menu = Mmmenu.new(:request => @request) do |m|
+      m.add 'Item1', '/items1', :match_subpaths => true
+      m.add 'Item2', '/items2', :html => 'whatever' do |subm|
+        subm.add 'New', '/item2/new'
+        subm.add 'Edit', '/item2/edit', :html => 'huh'
+      end
+    end
+
+    @menu.build.should == <<END
+Item1 /items1 current\s
+Item2 /items2  whatever
+New /item2/new\s\s
+Edit /item2/edit  huh
 END
 
   end
