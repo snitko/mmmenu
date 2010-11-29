@@ -6,7 +6,7 @@ module MmmenuHelper
     end
     menu.level_markup(0) { |menu| '<ul class="menu">' + menu + '</ul>' }
     menu.level_markup(1) { |menu| '<ul class="submenu">' + menu + '</ul>' }
-    menu.build
+    menu.build.html_safe
   end
 
 end
