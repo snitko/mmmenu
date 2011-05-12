@@ -1,31 +1,39 @@
 class Mmmenu
 
-  attr_accessor :active_item
+  attr_accessor :current_item
 
   def initialize(options, &block)
     @items          = options[:items] || Mmmenu::Level.new(&block).to_a
     @current_path   = options[:request].path.chomp('/')
     @request_params = options[:request].params
     @request_type   = options[:request].method.to_s.downcase
-    @item_markup    = []
-    @level_markup   = []
+    @item_markup            = []
+    @current_item_markup    = []
+    @level_markup           = []
   end
 
-  # Defines the markup for each menu item on the current and
+  # The following two methods define
+  # the markup for each menu item on the current and
   # lower levels (unless lower levels are not redefined later).
   # Example:
-  #   @menu.item_markup(0, :active_markup => 'class="current"') do |link, text, options|
+  #   @menu.item_markup(0, options) do |link, text, options|
   #     "<a href=\"#{link}\" #{options}>#{text}</a>"
   #   end
-  def item_markup(level, options, &block)
-    @item_markup[level] = { :block => block, :active_markup => options[:active_markup] }
+  def item_markup(level, options={}, &block)
+    level -= 1
+    @item_markup[level] = { :block => block, :options => options }
+  end
+  def current_item_markup(level, options={}, &block)
+    level -= 1
+    @current_item_markup[level] = { :block => block, :options => options }
   end
 
   # Defines the markup wrapper for the current menu level and
   # lower menu levels (unless lower levels are not redefined later).
   # Example:
   #   @menu.level_markup(0) { |level_content| "<div>#{level_content}</div>" }
-  def level_markup(level=0, &block)
+  def level_markup(level=1, &block)
+    level -= 1
     @level_markup[level] = block
   end
 
@@ -42,39 +50,38 @@ class Mmmenu
 
       # Parsing of a single menu level happens here
       output          = ''
-      has_active_item = false
+      has_current_item = false
 
       raise("Mmmenu object #{self} is empty, no items defined!") if items.nil? or items.empty?
       items.each do |item|
 
-        options = {}
         child_menu = build_level(item[:children], level+1) if item[:children]
         child_output = child_menu[:output] if child_menu
         
         #############################################################
-        # Here's where we check if the current item is an active item
+        # Here's where we check if the current item is a current item
         # and we should use a special markup for it
         #############################################################
         if (
-          item[:href] == active_item                    or
-          item_paths_match?(item)                       or
-          (child_menu and child_menu[:has_active_item]) or
+          item[:href] == current_item                    or
+          item_paths_match?(item)                        or
+          (child_menu and child_menu[:has_current_item]) or
           item_href_match?(item)
-        ) and !has_active_item
+        ) and !has_current_item
                     
               then
-                  options[:active] = item_markup[:active] and has_active_item = true
-
+                  has_current_item = true
+                  item_output = item_markup[:current][:block].call(item[:href], item[:title], item_markup[:current][:options])
+        else
+          item_output = item_markup[:basic][:block].call(item[:href], item[:title], item_markup[:basic][:options])
         end
         #############################################################
 
-        options.merge!(:html => item[:html]) if item[:html]
-        item_output = item_markup[:basic].call(item[:href], item[:title], options)
         output += "#{item_output}#{child_output}"
       end
 
       output = level_markup.call(output)
-      { :has_active_item => has_active_item, :output => output }
+      { :has_current_item => has_current_item, :output => output }
 
     end
 
@@ -118,12 +125,12 @@ class Mmmenu
 
     def build_item_markup(level)
       if @item_markup[level]
-        { :basic => @item_markup[level][:block], :active => @item_markup[level][:active_markup]}
+        { :basic => @item_markup[level], :current => @current_item_markup[level] }
       else
         unless @item_markup.empty?
-          { :basic => @item_markup.last[:block], :active => @item_markup.last[:active_markup] }
+          { :basic => @item_markup.last, :current => @current_item_markup.last }
         else
-          { :basic => lambda { |link,text,options| "#{text} #{link} #{options[:active]} #{options[:html]}\n" }, :active => 'current' }
+          { :basic => {:block => lambda { |link,text,options| "#{text} #{link} #{options}\n" }}, :current => { :block => lambda { |link,text,options| "#{text} #{link} #{options} current\n" } } }
         end
       end
     end

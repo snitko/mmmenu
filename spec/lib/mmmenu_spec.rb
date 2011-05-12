@@ -1,4 +1,5 @@
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require File.expand_path(File.dirname(__FILE__) + '/../../lib/mmmenu_level')
+require File.expand_path(File.dirname(__FILE__) + '/../../lib/mmmenu')
 
 describe Mmmenu do
 
@@ -24,16 +25,22 @@ describe Mmmenu do
   end
 
   it "renders one level" do
-    @menu.item_markup(0, :active_markup => 'current') do |link, text, options|
-      "#{text}: #{link} #{options[:active]}\n"
+    @menu.item_markup(1) do |link, text, options|
+      "#{text}: #{link} #{options}\n"
     end
-    @menu.item_markup(2, :active_markup => 'current') do |link, text, options|
-      "  #{text}: #{link} #{options[:active]}\n"
+    @menu.current_item_markup(1) do |link, text, options|
+      "#{text}: #{link} #{options} current\n"
     end
-    @menu.level_markup(0) { |menu| menu }
+    @menu.item_markup(2) do |link, text, options|
+      "  #{text}: #{link} #{options}\n"
+    end
+    @menu.current_item_markup(2) do |link, text, options|
+      "  #{text}: #{link} #{options} current\n"
+    end
+    @menu.level_markup(1) { |menu| menu }
     (@menu.build.chomp(" \n") + "\n").should == <<END
-Item1:  current
-  Create: /items1/new current
+Item1:   current
+  Create: /items1/new  current
   Index: /items1/ 
   Print: /items1/print 
 Item2: /items2\s
@@ -53,12 +60,15 @@ END
     request.should_receive(:method).once.and_return('get')
     request.should_receive(:params).once.and_return({})
     @menu = Mmmenu.new(:items => items, :request => request )
-    @menu.item_markup(0, :active_markup => 'current') do |link, text, options|
-      "#{text}: #{link} #{options[:active]}\n"
+    @menu.item_markup(1) do |link, text, options|
+      "#{text}: #{link} #{options}\n"
+    end
+    @menu.current_item_markup(1) do |link, text, options|
+      "#{text}: #{link} #{options} current\n"
     end
     @menu.build.should == <<END
 item1: /item1 
-item2: /item2 current
+item2: /item2  current
 END
 
   end
@@ -74,11 +84,14 @@ END
     request.should_receive(:params).once.and_return({"param" => "1"})
     request.should_receive(:method).once.and_return('get')
     @menu = Mmmenu.new(:items => items, :request => request )
-    @menu.item_markup(0, :active_markup => 'current') do |link, text, options|
-      "#{text}: #{link} #{options[:active]}\n"
+    @menu.item_markup(1) do |link, text, options|
+      "#{text}: #{link} #{options}\n"
+    end
+    @menu.current_item_markup(1) do |link, text, options|
+      "#{text}: #{link} #{options} current\n"
     end
     @menu.build.should == <<END
-item1: /item1 current
+item1: /item1  current
 item2: /item1 
 item3: /item1 
 END
@@ -95,10 +108,10 @@ END
     end
 
     @menu.build.should == <<END
-Item1 /items1 current\s
-Item2 /items2\s\s
-New /item2/new\s\s
-Edit /item2/edit\s\s
+Item1 /items1  current
+Item2 /items2\s
+New /item2/new\s
+Edit /item2/edit\s
 END
 
   end
@@ -107,17 +120,17 @@ END
 
     @menu = Mmmenu.new(:request => @request) do |m|
       m.add 'Item1', '/items1', :match_subpaths => true
-      m.add 'Item2', '/items2', :html => 'whatever' do |subm|
+      m.add 'Item2', '/items2' do |subm|
         subm.add 'New', '/item2/new'
-        subm.add 'Edit', '/item2/edit', :html => 'huh'
+        subm.add 'Edit', '/item2/edit'
       end
     end
 
     @menu.build.should == <<END
-Item1 /items1 current\s
-Item2 /items2  whatever
-New /item2/new\s\s
-Edit /item2/edit  huh
+Item1 /items1  current
+Item2 /items2\s
+New /item2/new\s
+Edit /item2/edit\s
 END
 
   end
