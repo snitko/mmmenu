@@ -7,8 +7,18 @@ Why another menu plugin?
 ------------------------
 All menu plugins I've seen have HTML markup hardcoded into them.
 *Mmmenu* offers you a chance to define your own markup, along with
-a nice DSL to describe multi-level menu structures. Let me show you an example,
-imagine you put this into your controller:
+a nice DSL to describe multi-level menu structures.
+
+INSTALLATION
+------------
+
+1. git submodule add git://github.com/snitko/mmmenu.git vendor/plugins/mmmenu
+2. rails generate mmmenu (optional)
+
+Basic Usage
+---------------
+
+Imagine you put this into your controller:
 
     @menu = Mmmenu.new(:request => request) do |l1|
 
@@ -23,68 +33,76 @@ imagine you put this into your controller:
     end 
 
 As you can see, we specify the paths, so our menu does not depend on the routes.
+#mmmenu method automatically puts your menu into @menu instance variable. If you wish to use another variable,
+you may use a more explicit syntax:
+
+    @my_menu = Mmmenu.new(:request => request) do |l1| { ... }
+
 Now let's see what happens in the views:
 
   <%= build_mmmenu(@menu) %>
 
-And that's it, you get your menu rendered. Now, like I promised, the html-markup is totally
-configurable: that's because mmmenu_helper.rb file with `#build_mmmenu` helper method was generated,
-when you installed the plugin. Let's take a look at what's inside this helper:
+And that's it, you get your menu rendered.
+
+Customizing Views
+------------------------
+Now, like I promised, the html-markup is totally
+configurable.
+
+Run `rails generate mmmenu`, you'll get your app/helpers/mmmenu_helper.rb file and a bunch of templates copied out of the plugin views/mmmenu directory into app/views/mmmenu directory, thus replacing the plugin default files. Here's what those template files are and what they mean:
+
+`_current_item_markup.erb` 	is responsible for the current item in the menu
+`_item_markup.erb` 			is responsible for the non-current items
+`level_1.erb`					is a wrapper for menu level 1
+`level_2.erb`					is a wrapper for menu level 2 (submenu)
+
+If you wish to customize deeper levels of menus and items in them, you should take a look at the generated `mmmenu_helper.rb` file
+
+Customizing the Helper
+----------------------------
+
+Let's take a look at what's inside this helper:
 
     def build_mmmenu(menu)
-      menu.item_markup(0, :active_markup => 'class="current"') do
-        |link, text, options| "<li><a href=\"#{link}\" #{options[:active]}>#{text}</a></li>\n"
+      menu.item_markup(1) do |link, text, options|
+        render(:partial => "mmmenu/item", :locals => { :link => link, :text => text, :options => options })
       end
-      menu.level_markup(0) { |menu| '<ul class="menu">' + menu + '</ul>' }
-      menu.level_markup(1) { |menu| '<ul class="submenu">' + menu + '</ul>' }
-      menu.build
+      menu.current_item_markup(1) do |link, text, options|
+        render(:partial => "mmmenu/current_item", :locals => { :link => link, :text => text, :options => options })
+      end
+      menu.level_markup(1) { |m| render(:partial => "mmmenu/level_1", :locals => { :menu => m }) }
+      menu.level_markup(2) { |m| render(:partial => "mmmenu/level_2", :locals => { :menu => m }) }
+      menu.build.html_safe
     end
 
 You can see now, that `#item_markup` method defines the html markup for menu item,
-and `#level_markup` does the same for menu level wrapper. They may contain as much levels
-as you want and you don't need to define a markup for each level: the deepest level markup
+and `#level_markup` does the same for menu level wrapper. The first argument is the menu level.
+You may define as much levels as you want, but you don't need to define markup for each level: the deepest level of the markup
 defined will be used for all of the deeper levels.
 
-Moreover, you might want to highlight `li` tag and pass some class to `a` tag, you can
-do it like this:
+By default, build_mmmenu helper defines two partial templates for level 1 of the menu.
+It does so by calling two methods on a Mmmenu object:
+  #current_item_markup defines markup for the current menu item
+  #item_markup defines markup for all other menu items
+Both methods accept an optional second argument - a hash of html_options:
 
-    def build_mmmenu(menu)
-      menu.item_markup(0, :active_markup => 'class="current"') do
-        |link, text, options| "<li #{options[:active]}><a href=\"#{link}\" class=\"#{options[:html]}\">#{text}</a></li>\n"
-      end
-      menu.build
-    end
+    menu.item_markup(1, :class => "mmmenu")
 
-    @menu = Mmmenu.new(:request => @request) do |m|
-      m.add 'Item1', '/items1', :match_subpaths => true
-      m.add 'Item2', '/items2', :html => 'class="special_link"' do |subm|
-        subm.add 'New', '/item2/new'
-        subm.add 'Edit', '/item2/edit', :html => 'huh'
-      end
-    end
+which is later used in the templates like this:
 
-Or, in combination with powered by Rails `#content_tag` and `#link_to` like this:
+    <li><%= link_to text, link, options %></li>
 
-    def build_mmmenu(menu)
-      menu.item_markup(0, :active_markup => { :class => :current }) do
-        |link, text, options| content_tag(:li, link_to(text, link, options[:html]), options[:active])
-      end
-      menu.build
-    end
+Note, that this is an example from a default template and options hash may not be present in the customized template.
 
-    @menu = Mmmenu.new(:request => @request) do |m|
-      m.add 'Item1', '/items1', :match_subpaths => true
-      m.add 'Item2', '/items2', :html => { :class => :special_link } do |subm|
-        subm.add 'New', '/item2/new'
-        subm.add 'Edit', '/item2/edit'
-      end
-    end
+Disclaimer: if you call Mmmenu#item_markup for a certain level, you MUST call Mmmenu#current_item_markup
+for the same level.
 
-Now go ahead and change this method the way you like.
+Most of the time, you will want to customize your views, not the helper, so you may as well delete it from your application/helpers dir.
+
 
 Finally, let's take a closer look at some of the options and what they mean.
 ---------------------------------------------------------------------
-* Active item
+##### Active item
 Mmmenu automatically marks each menu_item if it is active with the markup, that you provide with
 :active_markup option for `#item_markup` method. The item is considered active not only if the path
 match, but also if one of the children of the item is active. You may as well set the active item manually like that:
@@ -93,7 +111,7 @@ match, but also if one of the children of the item is active. You may as well se
 
 In this case `'/articles'` would match against the second argument that you pass to the `#add` method, which is the path the menu itme points to. 
 
-* Paths
+##### Paths
 For each menu item you may specify a number of paths, that should match for the item to be active.
 Unless you provide the `:path` option for `Mmmenu#add`, the second argument is used as the matching path.
 If you'd like to specify paths explicitly, do something like this:
@@ -117,10 +135,3 @@ Or you may use wildcards:
     l1.add "Articles" articles_path, :paths => [["/articles/*"]]
 
 That's much easier usually.
-
-
-INSTALLATION
-------------
-
-1. git submodule add git://github.com/snitko/mmmenu.git vendor/plugins/mmmenu
-2. script/generate mmmenu
