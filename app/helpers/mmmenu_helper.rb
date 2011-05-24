@@ -1,6 +1,7 @@
 module MmmenuHelper
 
   def build_mmmenu(menu)
+    return nil unless menu
     menu.item_markup(1) do |link, text, options|
       render(:partial => "mmmenu/item", :locals => { :link => link, :text => text, :options => options })
     end
