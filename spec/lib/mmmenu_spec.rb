@@ -25,26 +25,21 @@ describe Mmmenu do
   end
 
   it "renders one level" do
-    @menu.item_markup(1) do |link, text, options|
-      "#{text}: #{link} #{options}\n"
-    end
-    @menu.current_item_markup(1) do |link, text, options|
-      "#{text}: #{link} #{options} current\n"
-    end
+    set_menu_markup
     @menu.item_markup(2) do |link, text, options|
-      "  #{text}: #{link} #{options}\n"
+      "  #{text}: #{link}\n"
     end
     @menu.current_item_markup(2) do |link, text, options|
-      "  #{text}: #{link} #{options} current\n"
+      "  #{text}: #{link} current\n"
     end
     @menu.level_markup(1) { |menu| menu }
-    (@menu.build.chomp(" \n") + "\n").should == <<END
-Item1:   current
-  Create: /items1/new  current
-  Index: /items1/ 
-  Print: /items1/print 
-Item2: /items2\s
-Item3: /items3\s
+    @menu.build.should == <<END
+Item1:  current
+  Create: /items1/new current
+  Index: /items1/
+  Print: /items1/print
+Item2: /items2
+Item3: /items3
 Item4: /items4
 END
 
@@ -60,15 +55,10 @@ END
     request.should_receive(:method).once.and_return('get')
     request.should_receive(:params).once.and_return({})
     @menu = Mmmenu.new(:items => items, :request => request )
-    @menu.item_markup(1) do |link, text, options|
-      "#{text}: #{link} #{options}\n"
-    end
-    @menu.current_item_markup(1) do |link, text, options|
-      "#{text}: #{link} #{options} current\n"
-    end
+    set_menu_markup
     @menu.build.should == <<END
-item1: /item1 
-item2: /item2  current
+item1: /item1
+item2: /item2 current
 END
 
   end
@@ -84,16 +74,32 @@ END
     request.should_receive(:params).once.and_return({"param" => "1"})
     request.should_receive(:method).once.and_return('get')
     @menu = Mmmenu.new(:items => items, :request => request )
-    @menu.item_markup(1) do |link, text, options|
-      "#{text}: #{link} #{options}\n"
-    end
-    @menu.current_item_markup(1) do |link, text, options|
-      "#{text}: #{link} #{options} current\n"
-    end
+    set_menu_markup
     @menu.build.should == <<END
-item1: /item1  current
-item2: /item1 
-item3: /item1 
+item1: /item1 current
+item2: /item1
+item3: /item1
+END
+  end
+
+  it "chooses current item when forced to do so by explicitly set current_item property" do
+    items = [
+      { :title => 'item1', :href => '/item1' },
+      { :title => 'item2', :href => '/item2' },
+      { :title => 'item3', :href => '/item3' }
+    ]
+    request = mock('request')
+    request.should_receive(:path).once.and_return('/item1')
+    request.should_receive(:method).once.and_return('get')
+    request.should_receive(:params).once
+    @menu = Mmmenu.new(:items => items, :request => request )
+    @menu.current_item = "/item2"
+    set_menu_markup
+
+    @menu.build.should == <<END
+item1: /item1
+item2: /item2 current
+item3: /item3
 END
   end
 
@@ -106,12 +112,13 @@ END
         subm.add 'Edit', '/item2/edit'
       end
     end
+    set_menu_markup
 
     @menu.build.should == <<END
-Item1 /items1  current
-Item2 /items2\s
-New /item2/new\s
-Edit /item2/edit\s
+Item1: /items1 current
+Item2: /items2
+New: /item2/new
+Edit: /item2/edit
 END
 
   end
@@ -125,14 +132,24 @@ END
         subm.add 'Edit', '/item2/edit'
       end
     end
+    set_menu_markup
 
     @menu.build.should == <<END
-Item1 /items1  current
-Item2 /items2\s
-New /item2/new\s
-Edit /item2/edit\s
+Item1: /items1 current
+Item2: /items2
+New: /item2/new
+Edit: /item2/edit
 END
 
+  end
+
+  def set_menu_markup(level=1)
+    @menu.item_markup(level) do |link, text, options|
+      "#{text}: #{link}\n"
+    end
+    @menu.current_item_markup(level) do |link, text, options|
+      "#{text}: #{link} current\n"
+    end
   end
 
 end

@@ -102,14 +102,17 @@ Most of the time, you will want to customize your views, not the helper, so you 
 
 Finally, let's take a closer look at some of the options and what they mean.
 ---------------------------------------------------------------------
-##### Active item
-Mmmenu automatically marks each menu_item if it is active with the markup, that you provide with
-:active_markup option for `#item_markup` method. The item is considered active not only if the path
-match, but also if one of the children of the item is active. You may as well set the active item manually like that:
+##### Current item
+Mmmenu automatically marks each current menu_item with the markup, that you provide in `#current_item_markup` method's block. The item is considered current not only if the paths
+match, but also if one of the children of the item is marked as current. You may as well set the current item manually like that:
 
-  @menu.active_item = '/articles'
+    @menu.current_item = '/articles'
 
-In this case `'/articles'` would match against the second argument that you pass to the `#add` method, which is the path the menu itme points to. 
+In this case `'/articles'` would match against the second argument that you pass to the `#add` method, which is the path the menu itme points to.
+Note that unless the item with such path is not present in the menu, then no item will be makred as current. It is a useful technique when you want
+to prevent the item from being current in the controller. For example:
+
+    @menu.current_item = '/search-results-pertending-to-be-a-list' if search_query_empty?
 
 ##### Paths
 For each menu item you may specify a number of paths, that should match for the item to be active.

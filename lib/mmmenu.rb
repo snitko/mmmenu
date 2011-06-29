@@ -65,10 +65,12 @@ class Mmmenu
         #############################################################
         if (
           item[:href] == current_item                    or
-          item_paths_match?(item)                        or
-          (child_menu and child_menu[:has_current_item]) or
-          item_href_match?(item)
-        ) and !has_current_item
+          ( current_item.nil? && (
+            item_paths_match?(item)                        or
+            (child_menu and child_menu[:has_current_item]) or
+            item_href_match?(item)
+          ))
+        ) && !has_current_item 
                     
               then
                   has_current_item = true
