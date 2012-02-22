@@ -1,3 +1,6 @@
+require 'mmmenu/level'
+require 'mmmenu/engine'
+
 class Mmmenu
 
   attr_accessor :current_item

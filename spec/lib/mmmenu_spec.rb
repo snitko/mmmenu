@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + '/../../lib/mmmenu_level')
+require File.expand_path(File.dirname(__FILE__) + '/../../lib/mmmenu/level')
 require File.expand_path(File.dirname(__FILE__) + '/../../lib/mmmenu')
 
 describe Mmmenu do
