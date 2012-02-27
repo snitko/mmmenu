@@ -1,0 +1,3 @@
+class Mmmenu
+  VERSION = '0.1'
+end
