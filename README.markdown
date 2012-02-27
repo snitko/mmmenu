@@ -12,7 +12,7 @@ a nice DSL to describe multi-level menu structures.
 INSTALLATION
 ------------
 
-1. git submodule add git://github.com/snitko/mmmenu.git vendor/plugins/mmmenu
+1. gem install mmmenu
 2. rails generate mmmenu (optional)
 
 Basic Usage
