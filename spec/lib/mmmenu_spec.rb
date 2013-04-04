@@ -18,9 +18,9 @@ describe Mmmenu do
 
   before(:each) do
     @request = mock('request')
-    @request.stub!(:path).once.and_return('/items1/new')
-    @request.stub!(:method).once.and_return('get')
-    @request.stub!(:params).once.and_return({})
+    @request.stub!(:path).and_return('/items1/new')
+    @request.stub!(:method).and_return('get')
+    @request.stub!(:params).and_return({})
     @menu = Mmmenu.new(:items => @items, :request => @request )
   end
 
