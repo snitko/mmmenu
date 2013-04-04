@@ -36,7 +36,7 @@ As you can see, we specify the paths, so our menu does not depend on the routes.
 `#mmmenu` method automatically puts your menu into @menu instance variable. If you wish to use another variable,
 you may use a more explicit syntax:
 
-    @my_menu = Mmmenu.new(:request => request) do |l1| { ... }
+    @my_menu = Mmmenu.new(:request => request) { |l1| ... }
 
 Now let's see what happens in the views:
 
@@ -56,22 +56,31 @@ Run `rails generate mmmenu`, you'll get your app/helpers/mmmenu_helper.rb file a
 `level_1.erb`					is a wrapper for menu level 1
 `level_2.erb`					is a wrapper for menu level 2 (submenu)
 
-If you wish to customize deeper levels of menus and items in them, you should take a look at the generated `mmmenu_helper.rb` file
+You can also has various templates for various menus on your page. Simply, provide a :templates_path option to #build_mmmenu helper like this:
+
+    <%= build_mmmenu(@menu, templates_path: 'mmmenu/my_custom_menu') %>
+
+Then you can put all the same files mentioned above in this directory and change them. This is useful when you have various types of menus
+requiring different html-markup. If you wish to customize deeper levels of menus and items in them, you should take a look at the generated
+`mmmenu_helper.rb` file.
 
 Customizing the Helper
 ----------------------------
 
 Let's take a look at what's inside this helper:
 
-    def build_mmmenu(menu)
+    def build_mmmenu(menu, options = {})
+      return nil unless menu
+      options = {templates_path: 'mmmenu' }.merge(options)
+      templates_path = options[:templates_path]
       menu.item_markup(1) do |link, text, options|
-        render(:partial => "mmmenu/item", :locals => { :link => link, :text => text, :options => options })
+        render(:partial => "#{templates_path}/item", :locals => { :link => link, :text => text, :options => options })
       end
       menu.current_item_markup(1) do |link, text, options|
-        render(:partial => "mmmenu/current_item", :locals => { :link => link, :text => text, :options => options })
+        render(:partial => "#{templates_path}/current_item", :locals => { :link => link, :text => text, :options => options })
       end
-      menu.level_markup(1) { |m| render(:partial => "mmmenu/level_1", :locals => { :menu => m }) }
-      menu.level_markup(2) { |m| render(:partial => "mmmenu/level_2", :locals => { :menu => m }) }
+      menu.level_markup(1) { |m| render(:partial => "#{templates_path}/level_1", :locals => { :menu => m }) }
+      menu.level_markup(2) { |m| render(:partial => "#{templates_path}/level_2", :locals => { :menu => m }) }
       menu.build.html_safe
     end
 
