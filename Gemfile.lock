@@ -1,26 +1,69 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    diff-lcs (1.1.3)
-    git (1.2.5)
-    jeweler (1.6.4)
-      bundler (~> 1.0)
+    addressable (2.3.6)
+    builder (3.2.2)
+    descendants_tracker (0.0.4)
+      thread_safe (~> 0.3, >= 0.3.1)
+    diff-lcs (1.2.5)
+    faraday (0.9.0)
+      multipart-post (>= 1.2, < 3)
+    git (1.2.7)
+    github_api (0.11.3)
+      addressable (~> 2.3)
+      descendants_tracker (~> 0.0.1)
+      faraday (~> 0.8, < 0.10)
+      hashie (>= 1.2)
+      multi_json (>= 1.7.5, < 2.0)
+      nokogiri (~> 1.6.0)
+      oauth2
+    hashie (3.1.0)
+    highline (1.6.21)
+    jeweler (2.0.1)
+      builder
+      bundler (>= 1.0)
       git (>= 1.2.5)
+      github_api
+      highline (>= 1.6.15)
+      nokogiri (>= 1.5.10)
       rake
-    rake (0.9.2.2)
-    rspec (2.8.0)
-      rspec-core (~> 2.8.0)
-      rspec-expectations (~> 2.8.0)
-      rspec-mocks (~> 2.8.0)
-    rspec-core (2.8.0)
-    rspec-expectations (2.8.0)
-      diff-lcs (~> 1.1.2)
-    rspec-mocks (2.8.0)
+      rdoc
+    json (1.8.1)
+    jwt (1.0.0)
+    mini_portile (0.6.0)
+    multi_json (1.10.1)
+    multi_xml (0.5.5)
+    multipart-post (2.0.0)
+    nokogiri (1.6.2.1)
+      mini_portile (= 0.6.0)
+    oauth2 (0.9.4)
+      faraday (>= 0.8, < 0.10)
+      jwt (~> 1.0)
+      multi_json (~> 1.3)
+      multi_xml (~> 0.5)
+      rack (~> 1.2)
+    rack (1.5.2)
+    rake (10.3.2)
+    rdoc (4.1.1)
+      json (~> 1.4)
+    rspec (3.0.0)
+      rspec-core (~> 3.0.0)
+      rspec-expectations (~> 3.0.0)
+      rspec-mocks (~> 3.0.0)
+    rspec-core (3.0.2)
+      rspec-support (~> 3.0.0)
+    rspec-expectations (3.0.2)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.0.0)
+    rspec-mocks (3.0.2)
+      rspec-support (~> 3.0.0)
+    rspec-support (3.0.2)
+    thread_safe (0.3.4)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   bundler
-  jeweler (~> 1.6.4)
+  jeweler
   rspec

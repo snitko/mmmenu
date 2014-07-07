@@ -43,6 +43,7 @@ Item3: /items3
 Item4: /items4
 END
 
+
   end
 
   it "chooses the current item depending on request type" do
@@ -141,6 +142,12 @@ New: /item2/new
 Edit: /item2/edit
 END
 
+  end
+
+
+  it "returns current item title and url" do
+    @menu.build
+    @menu.current_item.should == {:title=>"Create", :href=>"/items1/new", :paths=>["/items1/new"], :html_options=>{}} 
   end
 
   def set_menu_markup(level=1)

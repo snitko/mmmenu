@@ -41,7 +41,9 @@ class Mmmenu
   end
 
   def build
-    build_level[:output]
+    result = build_level[:output]
+    @current_item = @deepest_current_item
+    result
   end
 
   private
@@ -76,6 +78,9 @@ class Mmmenu
         ) && !has_current_item 
                     
               then
+                  unless item[:children]
+                    @deepest_current_item = item
+                  end
                   has_current_item = true
                   item_output = item_markup[:current][:block].call(item[:href], item[:title], item_markup[:current][:options].merge(item[:html_options]))
         else
