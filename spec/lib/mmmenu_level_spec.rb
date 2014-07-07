@@ -10,7 +10,7 @@ describe Mmmenu::Level do
       end
     end
 
-    @menu_level.to_a.should == [
+    expect(@menu_level.to_a).to eq [
       {:title => "Title1", :href => "/path1"},
       {:title => "Title2", :href => "/path2", :children => [
         { :title => "SubTitle", :href => "/path2/subpath" }

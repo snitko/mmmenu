@@ -17,10 +17,10 @@ describe Mmmenu do
   end
 
   before(:each) do
-    @request = mock('request')
-    @request.stub!(:path).and_return('/items1/new')
-    @request.stub!(:method).and_return('get')
-    @request.stub!(:params).and_return({})
+    @request = double('request')
+    allow(@request).to receive(:path).and_return('/items1/new')
+    allow(@request).to receive(:method).and_return('get')
+    allow(@request).to receive(:params).and_return({})
     @menu = Mmmenu.new(:items => @items, :request => @request )
   end
 
@@ -33,7 +33,7 @@ describe Mmmenu do
       "  #{text}: #{link} current\n"
     end
     @menu.level_markup(1) { |menu| menu }
-    @menu.build.should == <<END
+    expect(@menu.build).to eq <<END
 Item1:  current
   Create: /items1/new current
   Index: /items1/
@@ -51,13 +51,13 @@ END
       { :title => 'item1', :href => '/item1', :paths => [['/item', 'post']] },
       { :title => 'item2', :href => '/item2', :paths => [['/item', 'get']] }
     ]
-    request = mock('request')
-    request.should_receive(:path).once.and_return('/item')
-    request.should_receive(:method).once.and_return('get')
-    request.should_receive(:params).once.and_return({})
+    request = double('request')
+    allow(request).to receive(:path).once.and_return('/item')
+    allow(request).to receive(:method).once.and_return('get')
+    allow(request).to receive(:params).once.and_return({})
     @menu = Mmmenu.new(:items => items, :request => request )
     set_menu_markup
-    @menu.build.should == <<END
+    expect(@menu.build).to eq <<END
 item1: /item1
 item2: /item2 current
 END
@@ -70,13 +70,13 @@ END
       { :title => 'item2', :href => '/item1', :paths => [['/item1', 'get',  {:param => 2}]] },
       { :title => 'item3', :href => '/item1', :paths => [['/item1', 'get',  {:param => nil}]] }
     ]
-    request = mock('request')
-    request.should_receive(:path).once.and_return('/item1')
-    request.should_receive(:params).once.and_return({"param" => "1"})
-    request.should_receive(:method).once.and_return('get')
+    request = double('request')
+    allow(request).to receive(:path).once.and_return('/item1')
+    allow(request).to receive(:params).once.and_return({"param" => "1"})
+    allow(request).to receive(:method).once.and_return('get')
     @menu = Mmmenu.new(:items => items, :request => request )
     set_menu_markup
-    @menu.build.should == <<END
+    expect(@menu.build).to eq <<END
 item1: /item1 current
 item2: /item1
 item3: /item1
@@ -89,15 +89,15 @@ END
       { :title => 'item2', :href => '/item2' },
       { :title => 'item3', :href => '/item3' }
     ]
-    request = mock('request')
-    request.should_receive(:path).once.and_return('/item1')
-    request.should_receive(:method).once.and_return('get')
-    request.should_receive(:params).once
+    request = double('request')
+    allow(request).to receive(:path).once.and_return('/item1')
+    allow(request).to receive(:method).once.and_return('get')
+    allow(request).to receive(:params).once
     @menu = Mmmenu.new(:items => items, :request => request )
     @menu.current_item = "/item2"
     set_menu_markup
 
-    @menu.build.should == <<END
+    expect(@menu.build).to eq <<END
 item1: /item1
 item2: /item2 current
 item3: /item3
@@ -115,7 +115,7 @@ END
     end
     set_menu_markup
 
-    @menu.build.should == <<END
+    expect(@menu.build).to eq <<END
 Item1: /items1 current
 Item2: /items2
 New: /item2/new
@@ -135,7 +135,7 @@ END
     end
     set_menu_markup
 
-    @menu.build.should == <<END
+    expect(@menu.build).to eq <<END
 Item1: /items1 current
 Item2: /items2
 New: /item2/new
@@ -147,7 +147,7 @@ END
 
   it "returns current item title and url" do
     @menu.build
-    @menu.current_item.should == {:title=>"Create", :href=>"/items1/new", :paths=>["/items1/new"], :html_options=>{}} 
+    expect(@menu.current_item).to eq({:title=>"Create", :href=>"/items1/new", :paths=>["/items1/new"], :html_options=>{}})
   end
 
   def set_menu_markup(level=1)
