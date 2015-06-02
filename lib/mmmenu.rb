@@ -3,13 +3,14 @@ require 'mmmenu/engine'
 
 class Mmmenu
 
-  attr_accessor :current_item
+  attr_accessor :current_item, :options
 
   def initialize(options, &block)
     @items          = options[:items] || Mmmenu::Level.new(&block).to_a
     @current_path   = options[:request].path.chomp('/')
     @request_params = options[:request].params
     @request_type   = options[:request].method.to_s.downcase
+    
     @item_markup            = []
     @current_item_markup    = []
     @level_markup           = []
@@ -82,9 +83,9 @@ class Mmmenu
                     @deepest_current_item = item
                   end
                   has_current_item = true
-                  item_output = item_markup[:current][:block].call(item[:href], item[:title], item_markup[:current][:options].merge(item[:html_options]))
+                  item_output = item_markup[:current][:block].call(item[:href], item[:title], item_markup[:current][:options].merge(html_options: {}).merge(item.reject { |k,v| [:href, :title].include?(k) }))
         else
-          item_output = item_markup[:basic][:block].call(item[:href], item[:title], item_markup[:basic][:options].merge(item[:html_options]))
+          item_output = item_markup[:basic][:block].call(item[:href], item[:title], item_markup[:basic][:options].merge(html_options: {}).merge(item.reject { |k,v| [:href, :title].include?(k) }))
         end
         #############################################################
 

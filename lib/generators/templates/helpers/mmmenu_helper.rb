@@ -2,7 +2,7 @@ module MmmenuHelper
 
   def build_mmmenu(menu, options = {})
     return nil unless menu
-    options = {templates_path: 'mmmenu' }.merge(options)
+    options = { templates_path: 'mmmenu' }.merge(options)
     templates_path = options[:templates_path]
     menu.item_markup(1) do |link, text, options|
       render(:partial => "#{templates_path}/item", :locals => { :link => link, :text => text, :options => options })
